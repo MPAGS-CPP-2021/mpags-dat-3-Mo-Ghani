@@ -1,22 +1,30 @@
-#include "RunCaesarCipher.hpp"
+#include "CaesarCipher.hpp"
+#include "CipherMode.hpp"
 
+#include <iostream>
 #include <string>
-#include <vector>
 
-std::string runCaesarCipher(const std::string& inputText, const std::size_t key,
-                            const bool encrypt)
-{
+CaesarCipher::CaesarCipher(const std::size_t cipherKey) {
+    key_ = cipherKey;
+}
+CaesarCipher::CaesarCipher(const std::string cipherKey) {
+    if (cipherKey.empty()) {
+        key_ = 0;
+    }
+    else {
+        key_ = std::stoul(cipherKey);
+    }
+}
+
+std::string CaesarCipher::applyCipher(const std::string inputText, const CipherMode mode) {
     // Create the output string
     std::string outputText;
 
     // Create the alphabet container
-    const std::vector<char> alphabet = {
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-    const std::size_t alphabetSize{alphabet.size()};
+    const std::size_t alphabetSize{alphabet_.size()};
 
     // Make sure that the key is in the range 0 - 25
-    const std::size_t truncatedKey{key % alphabetSize};
+    const std::size_t truncatedKey{key_ % alphabetSize};
 
     // Loop over the input text
     char processedChar{'x'};
@@ -24,15 +32,18 @@ std::string runCaesarCipher(const std::string& inputText, const std::size_t key,
         // For each character in the input text, find the corresponding position in
         // the alphabet by using an indexed loop over the alphabet container
         for (size_t i{0}; i < alphabetSize; ++i) {
-            if (origChar == alphabet[i]) {
+            if (origChar == alphabet_[i]) {
                 // Apply the appropriate shift (depending on whether we're encrypting
                 // or decrypting) and determine the new character
                 // Can then break out of the loop over the alphabet
-                if (encrypt) {
-                    processedChar = alphabet[(i + truncatedKey) % alphabetSize];
-                } else {
-                    processedChar = alphabet[(i + alphabetSize - truncatedKey) %
+                switch (mode) {
+                case CipherMode::encrypt:
+                    processedChar = alphabet_[(i + truncatedKey) % alphabetSize];
+                    break;
+                case CipherMode::decrypt:
+                    processedChar = alphabet_[(i + alphabetSize - truncatedKey) %
                                              alphabetSize];
+                    break;
                 }
                 break;
             }
@@ -44,3 +55,4 @@ std::string runCaesarCipher(const std::string& inputText, const std::size_t key,
 
     return outputText;
 }
+
